@@ -3,6 +3,7 @@ import { getOptionsForVote } from '@/utils/getRandomPokemon'
 import { trpc } from '@/utils/trpc'
 import type { NextPage } from 'next'
 import { inferQueryResponse } from './api/trpc/[trpc]'
+import Image from 'next/image'
 
 const Home: NextPage = () => {
   const [ids, updateIds] = useState(getOptionsForVote())
@@ -48,11 +49,10 @@ type PokemonFromServer = inferQueryResponse<"get-pokemon-by-id">
 
 const PokemonListing: React.FC<{pokemon: PokemonFromServer, vote: () => void}> = (props) => {
 
-
   return (
     <div className='flex flex-col'>
-      <img className='w-64 h-64' src={props.pokemon.sprites.front_default ?? ''} />
-      <div className='text-white text-center capitalize mt-[-2rem]'>{props.pokemon.name}</div>
+      <Image width={256} height={256} src={props.pokemon.sprites.front_default ?? ''} />
+      <div className='text-white text-center capitalize mt-[-1rem]'>{props.pokemon.name}</div>
       <button className='bg-white rounded-full text-black py-1 w-2/3 self-center' onClick={() => props.vote()}>Rounder</button>
     </div>
   )
