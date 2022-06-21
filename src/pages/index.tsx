@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { getOptionsForVote } from '@/utils/getRandomPokemon'
 import { trpc } from '@/utils/trpc'
 import type { NextPage } from 'next'
+import { inferQueryResponse } from './api/trpc/[trpc]'
 
 const Home: NextPage = () => {
   const [ids, updateIds] = useState(getOptionsForVote())
@@ -22,19 +23,30 @@ const Home: NextPage = () => {
     <div className='h-screen w-screen flex flex-col items-center justify-center'>
       <div className='text-white text-2xl text-center pb-3'>Which pokemon is rounder?</div>
       <div className='border rounded p-8 flex justify-between items-center'>
-        <div className='w-64 h-64 flex flex-col'>
-          <img className='w-full' src={firstPokemon.data?.sprites.front_default ?? ''} />
-          <div className='text-white text-center capitalize mt-[-2rem]'>{firstPokemon.data?.name}</div>
-          <button className='bg-white rounded-full text-black py-1 w-2/3 self-center' onClick={() => voteForRoundest(first)}>Rounder</button>
-        </div>
-        <div className='px-9 text-white'>VS</div>
-        <div className='w-64 h-64 flex flex-col'>
-          <img className='w-full' src={secondPokemon.data?.sprites.front_default ?? ''} />
-          <div className='text-white text-center capitalize mt-[-2rem]'>{secondPokemon.data?.name}</div>
-          <button className='bg-white rounded-full text-black py-1 w-2/3 self-center' onClick={() => voteForRoundest(second)}>Rounder</button>
-        </div>
+        {!firstPokemon.isLoading && firstPokemon.data && !secondPokemon.isLoading && secondPokemon.data && (
+          <>
+            <PokemonListing pokemon={firstPokemon.data} vote={() => voteForRoundest(first)} />
+            <div className='px-9 text-white'>VS</div>
+            <PokemonListing pokemon={secondPokemon.data} vote={() => voteForRoundest(second)} />
+          </>
+        )}
         <div className='p-2' />
       </div>
+    </div>
+  )
+}
+
+// gets the type of the pokemon coming from the api
+type PokemonFromServer = inferQueryResponse<"get-pokemon-by-id">
+
+const PokemonListing: React.FC<{pokemon: PokemonFromServer, vote: () => void}> = (props) => {
+
+
+  return (
+    <div className='flex flex-col'>
+      <img className='w-64 h-64' src={props.pokemon.sprites.front_default ?? ''} />
+      <div className='text-white text-center capitalize mt-[-2rem]'>{props.pokemon.name}</div>
+      <button className='bg-white rounded-full text-black py-1 w-2/3 self-center' onClick={() => props.vote()}>Rounder</button>
     </div>
   )
 }
